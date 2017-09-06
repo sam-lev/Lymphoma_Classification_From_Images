@@ -134,7 +134,20 @@ def nucleiMorphology(epsilon, excelFile):
     #print(kneigh.predict([[23.4, 600], [15.1, 13.7]])) # epsilon = 0.4 given [2.4, 3.2] predicts label 1, i.e. non lymphoma
     
 
-
+#
+# neighborDistanceDistribution() computes the midpoint of the bounding box
+# of each nuclei as taken from the excell sheets BLFile and DLFile. Two methods contained
+# in neighborDistanceDistribution are fitPairwiseDist(pwDist) which takes
+# a pairwise distance matrix, computes the historgram for those distances and
+# fits a curve to the midpoint of each bin. The second method (which for the time
+# being is being called and which is still being worked on) is
+# fitPairwiseDistGMM(pwDistBL, pwDistDL) which given the pairwise distance matrices
+# for the Burkettes lymphoma (BL) and DLBCL (DL) trains a Gaussian mixture model
+# classifier on each distribution, allowing us to later attribute new samples as
+# being more likely to belong to one or the other distribution.
+#
+# example call:
+# python lymphomaClassification.py -analysis nDistDist -fDL '../data/DLBCL results.xlsx' -fBL '../data/BL results.xlsx'
 def neighborDistanceDistribution(BLFile, DLFile):
 
     # Since data is so large for the mean time use cPickle to
@@ -142,7 +155,14 @@ def neighborDistanceDistribution(BLFile, DLFile):
     try:
         BLpwDist = pickle.load(open("/Users/multivax/Documents/PhD/Research/Pascucci/ML_Lymphoma/pairwiseDistBL.p", "rb"))
         DLpwDist = pickle.load(open("/Users/multivax/Documents/PhD/Research/Pascucci/ML_Lymphoma/pairwiseDistDL.p", "rb"))
+
+        #
+        # Data still to large so truncating for the time being
+        #
+        BLpwDist = BLpwDist[:500]
+        DLpwDist = DLpwDist[:500]
         print("read data from pre-processed pickle files")
+        
     except  (OSError, IOError, EOFError, StandardError) as e:
         print("No pre-processed data files. Computing mid points of nuclei and pairwise distance matrices")
         #DLBCL data
@@ -191,10 +211,10 @@ def neighborDistanceDistribution(BLFile, DLFile):
         # to the same size as DL i.e. 40139 and 19050.
         # and much larger for pairwise distance
         #
-        if len(BLnucleiMid) > 10000:
-            BLnucleiMid = BLnucleiMid[:10000]
-        if len(DLnucleiMid) > 10000:
-            DLnucleiMid = DLnucleiMid[:10000]
+        if len(BLnucleiMid) > 500:
+            BLnucleiMid = BLnucleiMid[:500]
+        if len(DLnucleiMid) > 500:
+            DLnucleiMid = DLnucleiMid[:500]
         
         #
         # Compute pairwise distance matrix.(both methods use euclidean metric)
@@ -257,17 +277,18 @@ def neighborDistanceDistribution(BLFile, DLFile):
         BL_train = np.array([[i] for i in np.array(pwDistBL).flatten()])
         X_train = [[i] for i in np.array([pwDistBL, pwDistDL]).flatten()]
         Y_train = [0, 1]
-        estimators = dict((cov_type, GaussianMixture(n_components = 1, covariance_type=cov_type, max_iter=20, random_state=0)) for cov_type in [ 'diag', 'full'])
-        #'spherical', 'tied',
+        estimators = dict((cov_type, GaussianMixture(n_components = 1, covariance_type=cov_type, max_iter=20, random_state=0)) for cov_type in ['tied'])
+        #'spherical', 'tied',  'diag', 'full'
         n_estimators = len(estimators)
         for index, (name, estimator) in enumerate(estimators.items()):
             # Since we have class labels for the training data, we can
             # initialize the GMM parameters in a supervised manner.
-            estimator.means_init = np.array([DL_train.flatten().mean(axis=0)])
+            estimator.means_init = np.array([DL_train.mean(axis=0)])
             # now can add BL_flatten().mean(axis=0) and train on both data sets
             # Train the other parameters using the EM algorithm.
             estimator.fit(DL_train)
             print(estimator.predict(BL_train))
+            print("Above is the gaussian mixture model fit to the DLBCL classifiying the Burkkitts Lymphoma, seems promising.")
 
     #
     # Fit gaussian to one set of pairwise distances for covariance/variance
