@@ -14,7 +14,6 @@ nucleiMorphology(epsilon, excelFile)
   assigned.
   
   example call: 
-  
   python lymphomaClassification.py -e 0.2 -f './BL results.xlsx' -analysis nucMorph
   
   neighborDistanceDistribution(BLFile, DLFile) 
