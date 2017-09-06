@@ -156,11 +156,6 @@ def neighborDistanceDistribution(BLFile, DLFile):
         BLpwDist = pickle.load(open("/Users/multivax/Documents/PhD/Research/Pascucci/ML_Lymphoma/pairwiseDistBL.p", "rb"))
         DLpwDist = pickle.load(open("/Users/multivax/Documents/PhD/Research/Pascucci/ML_Lymphoma/pairwiseDistDL.p", "rb"))
 
-        #
-        # Data still to large so truncating for the time being
-        #
-        BLpwDist = BLpwDist[:500]
-        DLpwDist = DLpwDist[:500]
         print("read data from pre-processed pickle files")
         
     except  (OSError, IOError, EOFError, StandardError) as e:
@@ -271,15 +266,17 @@ def neighborDistanceDistribution(BLFile, DLFile):
         # Use gaussian mixter model for training data labeled 0, 1 for
         # Burkitts, Diffuse Lymphoma respectively. 
         #
-        DLlabel = [1 for i in pwDistDL]
-        BLlabel = [0 for i in pwDistBL]
-        DL_train = np.array([[i] for i in np.array(pwDistDL).flatten()])
-        BL_train = np.array([[i] for i in np.array(pwDistBL).flatten()])
-        X_train = [[i] for i in np.array([pwDistBL, pwDistDL]).flatten()]
-        Y_train = [0, 1]
-        estimators = dict((cov_type, GaussianMixture(n_components = 1, covariance_type=cov_type, max_iter=20, random_state=0)) for cov_type in ['tied'])
-        #'spherical', 'tied',  'diag', 'full'
+        DL_train = np.array([[i] for i in np.array(pwDistDL).flatten()])[:200]
+        DL_test = np.array([[i] for i in np.array(pwDistDL).flatten()])[201:401]
+        BL_train = np.array([[i] for i in np.array(pwDistBL).flatten()])[:200]
+        BL_test = np.array([[i] for i in np.array(pwDistBL).flatten()])[201:401]
+        mixed_train = [[i] for i in np.array([pwDistBL, pwDistDL]).flatten()]
+
+        # Compute the gaussian mixture estimater
+        estimators = dict((cov_type, GaussianMixture(n_components = 1, covariance_type=cov_type, max_iter=20, random_state=0)) for cov_type in ['tied'])#'spherical', 'tied',  'diag', 'full'
         n_estimators = len(estimators)
+
+        # If using multiple estimation approaches then iterate through them
         for index, (name, estimator) in enumerate(estimators.items()):
             # Since we have class labels for the training data, we can
             # initialize the GMM parameters in a supervised manner.
@@ -287,16 +284,17 @@ def neighborDistanceDistribution(BLFile, DLFile):
             # now can add BL_flatten().mean(axis=0) and train on both data sets
             # Train the other parameters using the EM algorithm.
             estimator.fit(DL_train)
-            print(estimator.predict(BL_train))
-            print("Above is the gaussian mixture model fit to the DLBCL classifiying the Burkkitts Lymphoma, seems promising.")
+            print(estimator.predict(DL_test))
+            print("Above is the gaussian mixture model fit to the DLBCL classifiying a hold out set from the DLBCL Lymphoma data, seems promising.")
 
     #
-    # Fit gaussian to one set of pairwise distances for covariance/variance
+    # Method 1: Fit gaussian to mid-points of histogram for one set of pairwise
+    # distances for covariance/variance
     #
     #fitPairwiseDist(pwL2Dist)
 
     #
-    # Perform Gaussian Mixed Model for pairwise distances between nuclei
+    # Method 2: Perform Gaussian Mixed Model for pairwise distances between nuclei
     # in labeled Burkkitts and Diffuse large B-Cell lymphoma.
     #
     fitPairwiseDistGMM(BLpwDist, DLpwDist)
