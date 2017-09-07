@@ -157,9 +157,6 @@ def neighborDistanceDistribution(BLFile, DLFile):
         DLpwDist = pickle.load(open("../../../pairwiseDistDL.p", "rb"))
         # Reformat for requirements of GMM method
         # reformating is very time intensive
-        #DLpwDist = np.array([[i] for i in np.array(DLpwDist).flatten()])
-        #bLpwDist = np.array([[i] for i in np.array(BLpwDist).flatten()])
-
         print("read data from pre-processed pickle files")
         
     except  (OSError, IOError, EOFError, StandardError) as e:
@@ -270,7 +267,6 @@ def neighborDistanceDistribution(BLFile, DLFile):
         # Use gaussian mixter model for training data labeled 0, 1 for
         # Burkitts, Diffuse Lymphoma respectively. 
         #
-        print("non formated pwDistDL ",pwDistDL[:10])
         DL_train = pwDistDL[:len(pwDistDL)-200]
         DL_test = pwDistDL[len(pwDistDL)-199:len(pwDistDL)-1]
         BL_train = pwDistBL[:len(pwDistBL)-200]
@@ -278,7 +274,6 @@ def neighborDistanceDistribution(BLFile, DLFile):
         # mixed to later compare using the GMM model with multiple components
         # and initialized means to that of BL and DLBCL distributions.
         mixed_train = DL_train+BL_train
-        print("DL_train %f BL_train %f DL_test %f BL_test %f" %(len(DL_train), len(BL_train), len(DL_test), len(BL_test)))
         # Compute the gaussian mixture estimater
         estimators = dict((cov_type, GaussianMixture(n_components = 2, covariance_type=cov_type, max_iter=20, random_state=0)) for cov_type in ['tied'])#'spherical', 'tied',  'diag', 'full'
         n_estimators = len(estimators)
@@ -292,9 +287,9 @@ def neighborDistanceDistribution(BLFile, DLFile):
             # now can add BL_flatten().mean(axis=0) and train on both data sets
             # Train the other parameters using the EM algorithm.
             estimator.fit(mixed_train)
-            print(estimator.predict(BL_test))
-            print(estimator.predict(DL_test))
-            print("Above is the gaussian mixture model fit to the DLBCL classifiying a hold out set from the DLBCL Lymphoma data, seems promising.")
+            print("Estimation of BL data: ",estimator.predict(BL_test))
+            print("Estimation of DLBCL data: ", estimator.predict(DL_test))
+            print("Above is the labeling assigned to the hold out sets from the gaussian mixture model fit to a mixture of the Burkkitts lymphoma pairwise distance and DLBC lymphoma pairwise distances with means pre-initialized to the means of each data set")
 
     #
     # Method 1: Fit gaussian to mid-points of histogram for one set of pairwise
