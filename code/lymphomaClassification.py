@@ -287,8 +287,8 @@ def neighborDistanceDistribution(BLFile, DLFile):
             # now can add BL_flatten().mean(axis=0) and train on both data sets
             # Train the other parameters using the EM algorithm.
             estimator.fit(mixed_train)
-            print("Estimation of BL data: ",estimator.predict(BL_test))
-            print("Estimation of DLBCL data: ", estimator.predict(DL_test))
+            print("Estimation of BL hold out set: ",estimator.predict(BL_test))
+            print("Estimation of DLBCL hold out set: ", estimator.predict(DL_test))
             print("Above is the labeling assigned to the hold out sets from the gaussian mixture model fit to a mixture of the Burkkitts lymphoma pairwise distance and DLBC lymphoma pairwise distances with means pre-initialized to the means of each data set")
 
     #
