@@ -301,7 +301,6 @@ def neighborDistanceDistribution(BLFile, DLFile):
     # Method 2: Perform Gaussian Mixed Model for pairwise distances between nuclei
     # in labeled Burkkitts and Diffuse large B-Cell lymphoma.
     #
-    print("BL %f DL %f" %(len(BLpwDist), len(DLpwDist)))
     fitPairwiseDistGMM(BLpwDist, DLpwDist)
 
 #
