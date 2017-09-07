@@ -153,8 +153,8 @@ def neighborDistanceDistribution(BLFile, DLFile):
     # Since data is so large for the mean time use cPickle to
     # serialize data and load when needed.
     try:
-        BLpwDist = pickle.load(open("../../../pairwiseDistBL.p", "rb"))
-        DLpwDist = pickle.load(open("../../../pairwiseDistDL.p", "rb"))
+        BLpwDist = pickle.load(open("../../pairwiseDistBL.p", "rb"))
+        DLpwDist = pickle.load(open("../../pairwiseDistDL.p", "rb"))
         # Reformat for requirements of GMM method
         # reformating is very time intensive
         print("read data from pre-processed pickle files")
@@ -219,9 +219,9 @@ def neighborDistanceDistribution(BLFile, DLFile):
         DLpwDist = euclidean_distances(np.array(DLnucleiMid),np.array(DLnucleiMid))
         BLpwDist = euclidean_distances(np.array(BLnucleiMid),np.array(BLnucleiMid))
         pDLdump = [[i] for i in DLpwDist.flatten()]
-        pickle.dump(pDLdump, open('../../../pairwiseDistDL.p', 'wb'))
+        pickle.dump(pDLdump, open('../../pairwiseDistDL.p', 'wb'))
         pBLdump = [[i] for i in BLpwDist.flatten()]
-        pickle.dump(pBLdump, open("../../../pairwiseDistBL.p", "wb"))
+        pickle.dump(pBLdump, open("../../pairwiseDistBL.p", "wb"))
     
     #
     # Estimate distribution with histogram
